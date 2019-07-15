@@ -1,0 +1,551 @@
+-------------------------------------------------
+-- Find per advertiser and hotel the cheapest price that was offered.
+-------------------------------------------------
+select
+   advertiser,
+   hotelid,
+   min(eurocents) as cheapest_price
+from
+   default.search_results
+   lateral view explode(hotelresults) t1 as hotelid, advertisers
+   lateral view explode(advertisers.advertisers) t2 as advertiser, deals
+   lateral view inline(deals) deal
+group by
+   advertiser, hotelid;
+
+-- STAGE DEPENDENCIES:
+--   Stage-1 is a root stage
+--   Stage-0 depends on stages: Stage-1
+--
+-- STAGE PLANS:
+--   Stage: Stage-1
+--     Map Reduce
+--       Map Operator Tree:
+--           TableScan
+--             alias: search_results
+--             Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--             Lateral View Forward
+--               Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--               Select Operator
+--                 Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--                 Lateral View Join Operator
+--                   outputColumnNames: _col7, _col8
+--                   Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                   Lateral View Forward
+--                     Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                     Select Operator
+--                       expressions: _col7 (type: int)
+--                       outputColumnNames: _col7
+--                       Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                       Lateral View Join Operator
+--                         outputColumnNames: _col7, _col9, _col10
+--                         Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                         Lateral View Forward
+--                           Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                           Select Operator
+--                             expressions: _col7 (type: int), _col9 (type: string)
+--                             outputColumnNames: _col7, _col9
+--                             Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                             Lateral View Join Operator
+--                               outputColumnNames: _col7, _col9, _col11, _col12
+--                               Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                               Select Operator
+--                                 expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                 outputColumnNames: _col9, _col7, _col11
+--                                 Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                 Group By Operator
+--                                   aggregations: min(_col11)
+--                                   keys: _col9 (type: string), _col7 (type: int)
+--                                   mode: hash
+--                                   outputColumnNames: _col0, _col1, _col2
+--                                   Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Reduce Output Operator
+--                                     key expressions: _col0 (type: string), _col1 (type: int)
+--                                     sort order: ++
+--                                     Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     value expressions: _col2 (type: int)
+--                           Select Operator
+--                             expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                             outputColumnNames: _col0
+--                             Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                             UDTF Operator
+--                               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                               function name: inline
+--                               Lateral View Join Operator
+--                                 outputColumnNames: _col7, _col9, _col11, _col12
+--                                 Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                 Select Operator
+--                                   expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+-- outputColumnNames: _col9, _col7, _col11
+--                                   Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Group By Operator
+--                                     aggregations: min(_col11)
+--                                     keys: _col9 (type: string), _col7 (type: int)
+--                                     mode: hash
+--                                     outputColumnNames: _col0, _col1, _col2
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Reduce Output Operator
+--                                       key expressions: _col0 (type: string), _col1 (type: int)
+--                                       sort order: ++
+--                                       Map-reduce parttion columns: _col0 (type: string), _col1 (type: int)
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       value expressions: _col2 (type: int)
+--                     Select Operator
+--                       expressions: _col8.advertisers (type: map<string,array<struct<eurocents:int,breakfast:boolean>>>)
+--                       outputColumnNames: _col0
+--                       Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                       UDTF Operator
+--                         Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                         function name: explode
+--                         Lateral View Join Operator
+--                           outputColumnNames: _col7, _col9, _col10
+--                           Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                           Lateral View Forward
+--                             Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                             Select Operator
+--                               expressions: _col7 (type: int), _col9 (type: string)
+--                               outputColumnNames: _col7, _col9
+--                               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                               Lateral View Join Operator
+--                                 outputColumnNames: _col7, _col9, _col11, _col12
+--                                 Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                 Select Operator
+--                                   expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                   outputColumnNames: _col9, _col7, _col11
+--                                   Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Group By Operator
+--                                     aggregations: min(_col11)
+--                                     keys: _col9 (type: string), _col7 (type: int)
+--                                     mode: hash
+--                                     outputColumnNames: _col0, _col1, _col2
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Reduce Output Operator
+--                                       key expressions: _col0 (type: string), _col1 (type: int)
+--                                       sort order: ++
+--                                       Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       value expressions: _col2 (type: int)
+--                             Select Operator
+--                               expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                               outputColumnNames: _col0
+--                               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                               UDTF Operator
+--                                 Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                 function name: inline
+--                                 Lateral View Join Operator
+--                                   outputColumnNames: _col7, _col9, _col11, _col12
+--                                   Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Select Operator
+--                                     expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                     outputColumnNames: _col9, _col7, _col11
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Group By Operator
+--                                       aggregations: min(_col11)
+--                                       keys: _col9 (type: string), _col7 (type: int)
+--                                       mode: hash
+--                                       outputColumnNames: _col0, _col1, _col2
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       Reduce Output Operator
+--                                         key expressions: _col0 (type: string), _col1 (type: int)
+--                                         sort order: ++
+--                                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                         Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                         value expressions: _col2 (type: int)
+--               Select Operator
+--                 expressions: hotelresults (type: map<int,struct<advertisers:map<string,array<struct<eurocents:int,breakfast:boolean>>>>>)
+--                 outputColumnNames: _col0
+--                 Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--                 UDTF Operator
+--                   Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--                   function name: explode
+--                   Lateral View Join Operator
+--                     outputColumnNames: _col7, _col8
+--                     Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                     Lateral View Forward
+--                       Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                       Select Operator
+--                         expressions: _col7 (type: int)
+--                         outputColumnNames: _col7
+--                         Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                         Lateral View Join Operator
+--                           outputColumnNames: _col7, _col9, _col10
+--                           Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                           Lateral View Forward
+--                             Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                             Select Operator
+--                               expressions: _col7 (type: int), _col9 (type: string)
+--                               outputColumnNames: _col7, _col9
+--                               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                               Lateral View Join Operator
+--                                 outputColumnNames: _col7, _col9, _col11, _col12
+--                                 Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                 Select Operator
+--                                   expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                   outputColumnNames: _col9, _col7, _col11
+--
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Group By Operator
+--                                     aggregations: min(_col11)
+--                                     keys: _col9 (type: string), _col7 (type: int)
+--                                     mode: hash
+--                                     outputColumnNames: _col0, _col1, _col2
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Reduce Output Operator
+--                                       key expressions: _col0 (type: string), _col1 (type: int)
+--                                       sort order: ++
+--                                       Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       value expressions: _col2 (type: int)
+--                             Select Operator
+--                               expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                               outputColumnNames: _col0
+--                               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                               UDTF Operator
+--                                 Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                 function name: inline
+--                                 Lateral View Join Operator
+--                                   outputColumnNames: _col7, _col9, _col11, _col12
+--                                   Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Select Operator
+--                                     expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                     outputColumnNames: _col9, _col7, _col11
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Group By Operator
+--                                       aggregations: min(_col11)
+--                                       keys: _col9 (type: string), _col7 (type: int)
+--                                       mode: hash
+--                                       outputColumnNames: _col0, _col1, _col2
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       Reduce Output Operator
+--                                         key expressions: _col0 (type: string), _col1 (type: int)
+--                                         sort order: ++
+--                                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                         Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                         value expressions: _col2 (type: int)
+--                       Select Operator
+--                         expressions: _col8.advertisers (type: map<string,array<struct<eurocents:int,breakfast:boolean>>>)
+--                         outputColumnNames: _col0
+--                         Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                         UDTF Operator
+--                           Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                           function name: explode
+--                           Lateral View Join Operator
+--                             outputColumnNames: _col7, _col9, _col10
+--                             Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                             Lateral View Forward
+--                               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                               Select Operator
+--                                 expressions: _col7 (type: int), _col9 (type: string)
+--                                 outputColumnNames: _col7, _col9
+--                                 Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                 Lateral View Join Operator
+--                                   outputColumnNames: _col7, _col9, _col11, _col12
+--                                   Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                   Select Operator
+--                                     expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                     outputColumnNames: _col9, _col7, _col11
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Group By Operator
+--                                       aggregations: min(_col11)
+--                                       keys: _col9 (type: string), _col7 (type: int)
+--                                       mode: hash
+--                                       outputColumnNames: _col0, _col1, _col2
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       Reduce Output Operator
+--                                         key expressions: _col0 (type: string), _col1 (type: int)
+--                                         sort order: ++
+--                                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                         Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                         value expressions: _col2 (type: int)
+--                               Select Operator
+--                                 expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                                 outputColumnNames: _col0
+--                                 Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                 UDTF Operator
+--                                   Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                   function name: inline
+--                                   Lateral View Join Operator
+--                                     outputColumnNames: _col7, _col9, _col11, _col12
+--                                     Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                     Select Operator
+--                                       expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                       outputColumnNames: _col9, _col7, _col11
+--                                       Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                       Group By Operator
+--                                         aggregations: min(_col11)
+--                                         keys: _col9 (type: string), _col7 (type: int)
+--                                         mode: hash
+--                                         outputColumnNames: _col0, _col1, _col2
+--                                         Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                         Reduce Output Operator
+--                                           key expressions: _col0 (type: string), _col1 (type: int)
+--                                           sort order: ++
+--                                           Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+--                                           Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                           value expressions: _col2 (type: int)
+--       Reduce Operator Tree:
+--         Group By Operator
+--           aggregations: min(VALUE._col0)
+--           keys: KEY._col0 (type: string), KEY._col1 (type: int)
+--           mode: mergepartial
+--           outputColumnNames: _col0, _col1, _col2
+--           Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--           Select Operator
+--             expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+--             outputColumnNames: _col0, _col1, _col2
+--             Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--             File Output Operator
+--               compressed: false
+--               Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--               table:
+--                   input format: org.apache.hadoop.mapred.TextInputFormat
+--                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+--                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+--
+--   Stage: Stage-0
+--     Fetch Operator
+--       limit: -1
+--       Processor Tree:
+--         ListSink
+--
+-- Time taken: 0.077 seconds, Fetched: 295 row(s)
+
+
+with advertiser_and_hotel_ranked_by_eurocents as (
+select
+  advertiser,
+  hotelid,
+  deal.eurocents,
+  rank() over (partition by advertiser, hotelid order by eurocents) as rank
+from
+  default.search_results
+  lateral view explode(hotelresults) t1 as hotelid, advertisers
+  lateral view explode(advertisers.advertisers) t2 as advertiser, deals
+  lateral view inline(deals) deal
+)
+select
+  advertiser,
+  hotelid,
+  eurocents as cheapest_price
+from
+  default.advertiser_and_hotel_ranked_by_eurocents
+where
+  rank = 1
+limit 500;
+
+--STAGE DEPENDENCIES:
+--  Stage-1 is a root stage
+--  Stage-0 depends on stages: Stage-1
+--
+--STAGE PLANS:
+--  Stage: Stage-1
+--    Map Reduce
+--      Map Operator Tree:
+--          TableScan
+--            alias: search_results
+--            Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--            Lateral View Forward
+--              Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--              Select Operator
+--                Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--                Lateral View Join Operator
+--                  outputColumnNames: _col7, _col8
+--                  Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                  Lateral View Forward
+--                    Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                    Select Operator
+--                      expressions: _col7 (type: int)
+--                      outputColumnNames: _col7
+--                      Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                      Lateral View Join Operator
+--                        outputColumnNames: _col7, _col9, _col10
+--                        Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                        Lateral View Forward
+--                          Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                          Select Operator
+--                            expressions: _col7 (type: int), _col9 (type: string)
+--                            outputColumnNames: _col7, _col9
+--                            Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                            Lateral View Join Operator
+--                              outputColumnNames: _col7, _col9, _col11, _col12
+--                              Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                              Reduce Output Operator
+--                                key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                sort order: +++
+--                                Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                          Select Operator
+--                            expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                            outputColumnNames: _col0
+--                            Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                            UDTF Operator
+--                              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                              function name: inline
+--                              Lateral View Join Operator
+--                                outputColumnNames: _col7, _col9, _col11, _col12
+--                                Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                Reduce Output Operator
+--                                  key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                  sort order: +++
+--                                  Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                    Select Operator
+--                      expressions: _col8.advertisers (type: map<string,array<struct<eurocents:int,breakfast:boolean>>>)
+--                      outputColumnNames: _col0
+--                      Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                      UDTF Operator
+--                        Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                        function name: explode
+--                        Lateral View Join Operator
+--                          outputColumnNames: _col7, _col9, _col10
+--                          Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                          Lateral View Forward
+--                            Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                            Select Operator
+--                              expressions: _col7 (type: int), _col9 (type: string)
+--                              outputColumnNames: _col7, _col9
+--                              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                              Lateral View Join Operator
+--                                outputColumnNames: _col7, _col9, _col11, _col12
+--                                Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                Reduce Output Operator
+--                                  key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                  sort order: +++
+--                                  Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                            Select Operator
+--                              expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                              outputColumnNames: _col0
+--                              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                              UDTF Operator
+--                                Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                function name: inline
+--                                Lateral View Join Operator
+--                                  outputColumnNames: _col7, _col9, _col11, _col12
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                  Reduce Output Operator
+--                                    key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                    sort order: +++
+--                                    Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                    Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--              Select Operator
+--                expressions: hotelresults (type: map<int,struct<advertisers:map<string,array<struct<eurocents:int,breakfast:boolean>>>>>)
+--                outputColumnNames: _col0
+--                Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--                UDTF Operator
+--                  Statistics: Num rows: 996 Data size: 1101712 Basic stats: COMPLETE Column stats: NONE
+--                  function name: explode
+--                  Lateral View Join Operator
+--                    outputColumnNames: _col7, _col8
+--                    Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                    Lateral View Forward
+--                      Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                      Select Operator
+--                        expressions: _col7 (type: int)
+--                        outputColumnNames: _col7
+--                        Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                        Lateral View Join Operator
+--                          outputColumnNames: _col7, _col9, _col10
+--                          Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                          Lateral View Forward
+--                            Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                            Select Operator
+--                              expressions: _col7 (type: int), _col9 (type: string)
+--                              outputColumnNames: _col7, _col9
+--                              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                              Lateral View Join Operator
+--                                outputColumnNames: _col7, _col9, _col11, _col12
+--                                Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                Reduce Output Operator
+--                                  key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                  sort order: +++
+--                                  Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                            Select Operator
+--                              expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                              outputColumnNames: _col0
+--                              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                              UDTF Operator
+--                                Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                function name: inline
+--                                Lateral View Join Operator
+--                                  outputColumnNames: _col7, _col9, _col11, _col12
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                  Reduce Output Operator
+--                                    key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                    sort order: +++
+--                                    Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                    Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                      Select Operator
+--                        expressions: _col8.advertisers (type: map<string,array<struct<eurocents:int,breakfast:boolean>>>)
+--                        outputColumnNames: _col0
+--                        Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                        UDTF Operator
+--                          Statistics: Num rows: 1992 Data size: 2203424 Basic stats: COMPLETE Column stats: NONE
+--                          function name: explode
+--                          Lateral View Join Operator                                                                                           [0/558]
+--                            outputColumnNames: _col7, _col9, _col10
+--                            Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                            Lateral View Forward
+--                              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                              Select Operator
+--                                expressions: _col7 (type: int), _col9 (type: string)
+--                                outputColumnNames: _col7, _col9
+--                                Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                Lateral View Join Operator
+--                                  outputColumnNames: _col7, _col9, _col11, _col12
+--                                  Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                  Reduce Output Operator
+--                                    key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                    sort order: +++
+--                                    Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                    Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                              Select Operator
+--                                expressions: _col10 (type: array<struct<eurocents:int,breakfast:boolean>>)
+--                                outputColumnNames: _col0
+--                                Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                UDTF Operator
+--                                  Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                                  function name: inline
+--                                  Lateral View Join Operator
+--                                    outputColumnNames: _col7, _col9, _col11, _col12
+--                                    Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--                                    Reduce Output Operator
+--                                      key expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                                      sort order: +++
+--                                      Map-reduce partition columns: _col9 (type: string), _col7 (type: int)
+--                                      Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--      Reduce Operator Tree:
+--        Select Operator
+--          expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
+--          outputColumnNames: _col7, _col9, _col11
+--          Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--          PTF Operator
+--            Statistics: Num rows: 7968 Data size: 8813696 Basic stats: COMPLETE Column stats: NONE
+--            Filter Operator
+--              predicate: (_wcol0 = 1) (type: boolean)
+--              Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--              Select Operator
+--                expressions: _col9 (type: string), _col7 (type: int), _col11 (type: int)
+--                outputColumnNames: _col0, _col1, _col2
+--                Statistics: Num rows: 3984 Data size: 4406848 Basic stats: COMPLETE Column stats: NONE
+--                Limit
+--                  Number of rows: 500
+--                  Statistics: Num rows: 500 Data size: 553000 Basic stats: COMPLETE Column stats: NONE
+--                  File Output Operator
+--                    compressed: false
+--                    Statistics: Num rows: 500 Data size: 553000 Basic stats: COMPLETE Column stats: NONE
+--                    table:
+--                        input format: org.apache.hadoop.mapred.TextInputFormat
+--                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+--                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+--
+--  Stage: Stage-0
+--    Fetch Operator
+--      limit: 500
+--      Processor Tree:
+--        ListSink
+--
+--Time taken: 1.119 seconds, Fetched: 213 row(s)
+

@@ -44,27 +44,17 @@ A. Load the data into Hadoop, and perform a count of the records. List the steps
 
 B. Execute a query to find per advertiser and hotel the cheapest price that was offered. Provide the query, and the result you got.
 HQL: 
-with advertiser_and_hotel_ranked_by_eurocents as (
 select
-  advertiser,
-  hotelid,
-  deal.eurocents,
-  rank() over (partition by advertiser, hotelid order by eurocents) as rank
+   advertiser,
+   hotelid,
+   min(eurocents) as cheapest_price
 from
-  default.search_results
-  lateral view explode(hotelresults) t1 as hotelid, advertisers
-  lateral view explode(advertisers.advertisers) t2 as advertiser, deals
-  lateral view inline(deals) deal
-)
-select
-  advertiser,
-  hotelid,
-  eurocents as cheapest_price
-from
-  default.advertiser_and_hotel_ranked_by_eurocents
-where
-  rank = 1
-limit 500;
+   default.search_results
+   lateral view explode(hotelresults) t1 as hotelid, advertisers
+   lateral view explode(advertisers.advertisers) t2 as advertiser, deals
+   lateral view inline(deals) deal
+group by
+   advertiser, hotelid;
 
 Result:
 Amoma 6032 3804

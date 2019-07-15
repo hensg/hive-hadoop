@@ -5,17 +5,17 @@ drop table if exists default.search_results;
 
 create database if not exists default;
 
-create temporary table default.tmp_search_results (
+create temporary table default.tmp_raw_search_results (
   userid string,
   unix_time bigint,
   hotelresults map<int,struct<advertisers:map<string,array<struct<eurocents:int,breakfast:boolean>>>>>
 );
 
-load data inpath '/tmp/search_results.dat' into table default.tmp_search_results;
+load data inpath '/tmp/search_results.dat' into table default.tmp_raw_search_results;
 
 -------------------
 -- count raw data
-select count(*) from default.tmp_search_results;
+select count(*) from default.tmp_raw_search_results;
 -------------------
 
 
@@ -31,11 +31,11 @@ select
   *,
   to_date(from_unixtime(unix_time)) as date_of_search
 from
-  tmp_search_results
+  tmp_raw_search_results
 where
   userid is not null and unix_time is not null;
 
-drop table default.tmp_search_results;
+drop table default.tmp_raw_search_results;
 
 -------------------
 -- count good data
@@ -100,6 +100,8 @@ group by
   userid,
   unix_time
 limit 100;
+
+-- set hive.groupby.skewindata=true;
 
 
 ------------------------------------------------------------------------------------
