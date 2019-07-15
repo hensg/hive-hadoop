@@ -44,6 +44,7 @@ A. Load the data into Hadoop, and perform a count of the records. List the steps
 
 B. Execute a query to find per advertiser and hotel the cheapest price that was offered. Provide the query, and the result you got.
 HQL: 
+```
 select
    advertiser,
    hotelid,
@@ -135,10 +136,11 @@ expedia 9090 3816
 expedia 9091 3802
 expedia 9092 3817
 Time taken: 20.709 seconds, Fetched: 78 row(s)
-
+```
 
 C. For each search generate a list containing the cheapest price per hotel that offers breakfast. Again, please provide the query you used and the result.
 HQL: 
+```
 with search_cheapest_price_that_offers_breakfast as (
   select
     userid,
@@ -170,10 +172,11 @@ limit 100;
 
 Results: no results (there is no hotel that offers breakfast)
 Time taken: 23.674 seconds
-
+```
 
 D. Generate the list from "task 3" with more efficiency (think about UDFs!). Provide all resources to understand your solution, and measure the difference in execution times.
 HQL:
+```
 ADD JAR hdfs://namenode:8020/udfs/hive-udf-1.0-SNAPSHOT.jar;
 drop function if exists cheapest_prices_per_hotel_breakfast;
 create function cheapest_prices_per_hotel_breakfast AS 'udf.CheapestPricesPerHotelBreakfast';
@@ -196,3 +199,4 @@ limit 100;
 
 Results: no results;
 Time taken: 0.198 seconds
+```
